@@ -1,0 +1,17 @@
+# Stylus configuration for Swoosh contracts
+
+[workspace]
+members = ["intent_validator", "route_executor", "settlement_verifier"]
+
+[stylus]
+# Export ABIs for all contracts
+export-abi = true
+
+# Target VM version (latest stable)
+vm-version = "latest"
+
+# Optimization level for WASM compilation
+opt-level = "z"  # Optimize for size
+
+# Enable debug info in non-production builds
+debug = false
