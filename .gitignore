@@ -1,0 +1,61 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+.env
+.env.local
+.env.production
+
+# Building
+DESIGN_SYSTEM.md
+Developer_REDME.md
+PHASE_1_PROMPT.md
+PHASE_2_PROMPT.md
+PHASE_3_PROMPT.md
+PHASE_4_PROMPT.md
+PROMPTS_GUIDE.md
+
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# Environment
+.env.*.local
+
+# Private keys and secrets
+*.pem
+*.key
+private_keys/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Build artifacts
+*.wasm
+*.wat
+
+# OS
+Thumbs.db
+.DS_Store

@@ -1,0 +1,24 @@
+[package]
+name = "swoosh-contracts"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+stylus-sdk = "0.5"
+alloy-primitives = "0.7"
+alloy-sol-types = "0.7"
+mini-alloc = "0.4"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+ethers = "2.0"
+
+[profile.release]
+codegen-units = 1
+strip = true
+lto = true
+panic = "abort"
+opt-level = "z"
+
+[lib]
+crate-type = ["cdylib"]
