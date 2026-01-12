@@ -64,7 +64,6 @@ pub enum SettlementVerifierError {
 }
 
 #[storage]
-#[entrypoint]
 pub struct SettlementVerifier {
     /// Contract owner
     owner: StorageAddress,
@@ -125,9 +124,8 @@ impl SettlementVerifier {
         }
 
         // Record timestamp
-        self.settlement_timestamps.setter(intent_id).set(
-            StorageU256::from(self.vm().block_timestamp())
-        );
+        let timestamp = U256::from(self.vm().block_timestamp());
+        self.settlement_timestamps.setter(intent_id).set(timestamp);
 
         // Confirm settlement
         self.confirm_settlement(intent_id)?;
@@ -151,7 +149,7 @@ impl SettlementVerifier {
 
         // Update status to Confirmed
         self.settlements.setter(intent_id).set(
-            StorageU256::from(SettlementStatus::Confirmed as u8)
+            U256::from(SettlementStatus::Confirmed as u8)
         );
 
         Ok(())
@@ -184,7 +182,7 @@ impl SettlementVerifier {
         if settlement_time != U256::ZERO && current_time > settlement_time + timeout {
             // Timeout occurred
             self.settlements.setter(intent_id).set(
-                StorageU256::from(SettlementStatus::Failed as u8)
+                U256::from(SettlementStatus::Failed as u8)
             );
 
             self.vm().log(SettlementFailed {
@@ -245,7 +243,7 @@ impl SettlementVerifier {
     ) -> Result<(), SettlementVerifierError> {
         // Update status to Refunded
         self.settlements.setter(intent_id).set(
-            StorageU256::from(SettlementStatus::Refunded as u8)
+            U256::from(SettlementStatus::Refunded as u8)
         );
 
         self.vm().log(RefundInitiated {

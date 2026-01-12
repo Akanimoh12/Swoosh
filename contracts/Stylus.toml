@@ -1,8 +1,5 @@
 # Stylus configuration for Swoosh contracts
 
-[workspace]
-members = ["intent_validator", "route_executor", "settlement_verifier"]
-
 [stylus]
 # Export ABIs for all contracts
 export-abi = true
