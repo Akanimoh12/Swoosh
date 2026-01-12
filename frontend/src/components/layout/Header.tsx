@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { WalletButton } from '@/components/wallet/WalletButton';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from '@/components/ui/Button';
+import { Logo } from '@/components/brand/Logo';
 import { cn } from '@/lib/utils';
 
 const navLinks = [
@@ -32,10 +33,10 @@ export function Header() {
           <div className="flex items-center gap-8">
             <Link
               to="/"
-              className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors"
+              className="hover:opacity-80 transition-opacity"
               onClick={closeMobileMenu}
             >
-              Swoosh
+              <Logo size={36} variant="full" />
             </Link>
 
             {/* Desktop Navigation */}
