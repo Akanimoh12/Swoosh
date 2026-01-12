@@ -1,0 +1,83 @@
+// Prisma schema for Swoosh backend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enum for intent/route status
+enum Status {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Intent represents a user's natural language request
+model Intent {
+  id            String   @id @default(cuid())
+  userAddress   String   @map("user_address")
+  rawInput      String   @map("raw_input") @db.Text
+  parsedData    Json     @map("parsed_data")
+  status        Status   @default(PENDING)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  routes        Route[]
+  
+  // Indexes for frequently queried columns
+  @@index([userAddress, createdAt], name: "idx_user_created")
+  @@index([status, createdAt], name: "idx_status_created")
+  @@index([userAddress, status], name: "idx_user_status")
+  @@map("intents")
+}
+
+// Route represents an optimized execution path for an intent
+model Route {
+  id              String   @id @default(cuid())
+  intentId        String   @map("intent_id")
+  intentHash      String   @map("intent_hash")
+  routeData       Json     @map("route_data")
+  costEstimate    String   @map("cost_estimate") // Stored as string to avoid precision loss
+  estimatedTime   Int      @map("estimated_time") // Estimated execution time in seconds
+  expiration      DateTime
+  isSelected      Boolean  @default(false) @map("is_selected")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  intent          Intent   @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  
+  // Indexes
+  @@index([intentHash], name: "idx_intent_hash")
+  @@index([intentId, createdAt], name: "idx_intent_created")
+  @@index([expiration], name: "idx_expiration")
+  @@map("routes")
+}
+
+// Token prices cache (optional - can also use Redis only)
+model TokenPrice {
+  id              String   @id @default(cuid())
+  tokenAddress    String   @unique @map("token_address")
+  chainId         Int      @map("chain_id")
+  priceUsd        String   @map("price_usd") // Stored as string to avoid precision loss
+  lastUpdated     DateTime @default(now()) @map("last_updated")
+  
+  @@index([tokenAddress, chainId], name: "idx_token_chain")
+  @@map("token_prices")
+}
+
+// Gas prices cache (optional - can also use Redis only)
+model GasPrice {
+  id              String   @id @default(cuid())
+  chainId         Int      @unique @map("chain_id")
+  gasPriceGwei    String   @map("gas_price_gwei") // Stored as string to avoid precision loss
+  lastUpdated     DateTime @default(now()) @map("last_updated")
+  
+  @@map("gas_prices")
+}
