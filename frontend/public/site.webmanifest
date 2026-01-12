@@ -1,0 +1,96 @@
+{
+  "name": "Swoosh - Cross-Chain Swaps",
+  "short_name": "Swoosh",
+  "description": "Swap tokens across blockchains with natural language. Just describe what you want to do and Swoosh handles the rest.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Swoosh Desktop Interface"
+    },
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Swoosh Mobile Interface"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Intent",
+      "short_name": "New Swap",
+      "description": "Create a new cross-chain swap",
+      "url": "/intent",
+      "icons": [{ "src": "/icons/shortcut-intent.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "History",
+      "short_name": "History",
+      "description": "View your transaction history",
+      "url": "/history",
+      "icons": [{ "src": "/icons/shortcut-history.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

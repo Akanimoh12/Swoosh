@@ -1,11 +1,75 @@
 import { formatUnits } from 'viem';
 import { arbitrumSepolia, baseSepolia } from 'wagmi/chains';
 import type { Chain } from 'wagmi/chains';
+import { getChainIcon, getChainConfig, isTestnetMode, NETWORK_MODE } from './icons';
 
 /**
- * Supported chains for the application
+ * Supported chains for the application (testnets only for now)
  */
 export const SUPPORTED_CHAINS = [arbitrumSepolia, baseSepolia];
+
+/**
+ * Chain metadata with icons, faucets, and testnet info
+ */
+export interface ChainMeta {
+  chain: Chain;
+  iconUrl: string;
+  isTestnet: boolean;
+  faucetUrl?: string;
+  displayName: string;
+}
+
+/**
+ * Get enhanced chain metadata
+ */
+export function getChainMeta(chainId: number): ChainMeta | undefined {
+  const chain = SUPPORTED_CHAINS.find(c => c.id === chainId);
+  if (!chain) return undefined;
+  
+  const config = getChainConfig(chainId);
+  return {
+    chain,
+    iconUrl: getChainIcon(chainId),
+    isTestnet: config?.isTestnet ?? true,
+    faucetUrl: config?.faucetUrl,
+    displayName: config?.displayName ?? chain.name,
+  };
+}
+
+/**
+ * Get all supported chains with metadata
+ */
+export function getSupportedChainsMeta(): ChainMeta[] {
+  return SUPPORTED_CHAINS.map(chain => getChainMeta(chain.id)!).filter(Boolean);
+}
+
+/**
+ * Testnet faucet links
+ */
+export const FAUCET_LINKS: Record<number, { name: string; url: string }[]> = {
+  421614: [ // Arbitrum Sepolia
+    { name: 'Alchemy Faucet', url: 'https://www.alchemy.com/faucets/arbitrum-sepolia' },
+    { name: 'QuickNode Faucet', url: 'https://faucet.quicknode.com/arbitrum/sepolia' },
+    { name: 'Arbitrum Bridge', url: 'https://bridge.arbitrum.io/?destinationChain=arbitrum-sepolia' },
+  ],
+  84532: [ // Base Sepolia
+    { name: 'Alchemy Faucet', url: 'https://www.alchemy.com/faucets/base-sepolia' },
+    { name: 'QuickNode Faucet', url: 'https://faucet.quicknode.com/base/sepolia' },
+    { name: 'Superchain Faucet', url: 'https://app.optimism.io/faucet' },
+  ],
+};
+
+/**
+ * Get faucet links for a chain
+ */
+export function getFaucetLinks(chainId: number): { name: string; url: string }[] {
+  return FAUCET_LINKS[chainId] || [];
+}
+
+/**
+ * Current network mode
+ */
+export { NETWORK_MODE, isTestnetMode };
 
 /**
  * Formats an Ethereum address to a shortened version

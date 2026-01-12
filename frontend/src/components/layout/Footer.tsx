@@ -1,4 +1,8 @@
 import { Separator } from '@/components/ui/Separator';
+import { isTestnetMode } from '@/lib/icons';
+
+// Get version from package.json (injected via Vite)
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.1.0';
 
 const footerLinks = {
   product: [
@@ -7,24 +11,27 @@ const footerLinks = {
     { label: 'Documentation', href: 'https://docs.swoosh.app', external: true },
   ],
   resources: [
-    { label: 'Components', href: '/components' },
-    { label: 'Wallet Demo', href: '/wallet-demo' },
-    { label: 'GitHub', href: 'https://github.com/yourusername/swoosh', external: true },
+    { label: 'API Docs', href: 'https://docs.swoosh.app/api', external: true },
+    { label: 'GitHub', href: 'https://github.com/Akan-Datascience/Swoosh', external: true },
+    ...(isTestnetMode() ? [
+      { label: 'Arbitrum Faucet', href: 'https://www.alchemy.com/faucets/arbitrum-sepolia', external: true },
+      { label: 'Base Faucet', href: 'https://www.alchemy.com/faucets/base-sepolia', external: true },
+    ] : []),
   ],
   contracts: [
     {
       label: 'IntentValidator',
-      href: 'https://sepolia.arbiscan.io/address/0x...',
+      href: 'https://sepolia.arbiscan.io/address/0x6C28363C60Ff3bcc509eeA37Cce473B919947b9C',
       external: true,
     },
     {
       label: 'RouteExecutor',
-      href: 'https://sepolia.arbiscan.io/address/0x...',
+      href: 'https://sepolia.arbiscan.io/address/0x7c13D90950F542B297179e09f3A36EaA917A40C1',
       external: true,
     },
     {
       label: 'SettlementVerifier',
-      href: 'https://sepolia.arbiscan.io/address/0x...',
+      href: 'https://sepolia.arbiscan.io/address/0x20E8307cFe2C5CF7E434b5Cb2C92494fa4BAF01C',
       external: true,
     },
   ],
@@ -177,12 +184,20 @@ export function Footer() {
             <span className="text-sm text-muted-foreground">
               · Cross-Chain Intent Solver
             </span>
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+              v{APP_VERSION}
+            </span>
+            {isTestnetMode() && (
+              <span className="text-xs text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/30">
+                Testnet
+              </span>
+            )}
           </div>
           <div className="text-sm text-muted-foreground text-center md:text-right">
-            © 2026 Swoosh. Built for Arbitrum APAC Hackathon.
+            © {new Date().getFullYear()} Swoosh. Built for Arbitrum APAC Hackathon.
             <br className="md:hidden" />
             <span className="hidden md:inline"> · </span>
-            Powered by Stylus & CCIP.
+            Powered by Arbitrum & CCIP.
           </div>
         </div>
       </div>

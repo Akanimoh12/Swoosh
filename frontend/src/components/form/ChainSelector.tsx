@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { ChevronDown, Search, CheckCircle2 } from 'lucide-react';
+import { ChevronDown, Search, CheckCircle2, ExternalLink } from 'lucide-react';
+import { getChainIcon, isTestnetMode } from '@/lib/icons';
 
 export interface Chain {
   id: number;
@@ -17,6 +18,7 @@ export interface Chain {
   };
   isTestnet?: boolean;
   disabled?: boolean;
+  faucetUrl?: string;
 }
 
 export interface ChainSelectorProps {
@@ -26,57 +28,51 @@ export interface ChainSelectorProps {
   label?: string;
   disabled?: boolean;
   showTestnets?: boolean;
+  showTestnetBadge?: boolean;
 }
 
 const DEFAULT_CHAINS: Chain[] = [
   {
-    id: 42161,
-    name: 'Arbitrum One',
-    shortName: 'Arbitrum',
-    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    blockExplorer: 'https://arbiscan.io',
-    isTestnet: false
-  },
-  {
     id: 421614,
     name: 'Arbitrum Sepolia',
     shortName: 'Arb Sepolia',
+    logoUrl: getChainIcon(421614),
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
     blockExplorer: 'https://sepolia.arbiscan.io',
-    isTestnet: true
-  },
-  {
-    id: 8453,
-    name: 'Base',
-    shortName: 'Base',
-    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    blockExplorer: 'https://basescan.org',
-    isTestnet: false
+    isTestnet: true,
+    faucetUrl: 'https://www.alchemy.com/faucets/arbitrum-sepolia',
   },
   {
     id: 84532,
     name: 'Base Sepolia',
     shortName: 'Base Sepolia',
+    logoUrl: getChainIcon(84532),
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
     blockExplorer: 'https://sepolia.basescan.org',
-    isTestnet: true
+    isTestnet: true,
+    faucetUrl: 'https://www.alchemy.com/faucets/base-sepolia',
   },
+  // Mainnets disabled for now
   {
-    id: 10,
-    name: 'Optimism',
-    shortName: 'Optimism',
+    id: 42161,
+    name: 'Arbitrum One',
+    shortName: 'Arbitrum',
+    logoUrl: getChainIcon(42161),
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    blockExplorer: 'https://optimistic.etherscan.io',
-    isTestnet: false
+    blockExplorer: 'https://arbiscan.io',
+    isTestnet: false,
+    disabled: isTestnetMode(), // Disabled in testnet mode
   },
   {
-    id: 137,
-    name: 'Polygon',
-    shortName: 'Polygon',
-    nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-    blockExplorer: 'https://polygonscan.com',
-    isTestnet: false
-  }
+    id: 8453,
+    name: 'Base',
+    shortName: 'Base',
+    logoUrl: getChainIcon(8453),
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    blockExplorer: 'https://basescan.org',
+    isTestnet: false,
+    disabled: isTestnetMode(), // Disabled in testnet mode
+  },
 ];
 
 export function ChainSelector({
@@ -85,7 +81,8 @@ export function ChainSelector({
   onChainSelect,
   label = "Select Chain",
   disabled = false,
-  showTestnets = true
+  showTestnets = true,
+  showTestnetBadge = true
 }: ChainSelectorProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,8 +90,10 @@ export function ChainSelector({
   const filteredChains = useMemo(() => {
     let filtered = chains;
 
-    // Filter testnets if needed
-    if (!showTestnets) {
+    // In testnet mode, only show testnets
+    if (isTestnetMode()) {
+      filtered = filtered.filter(c => c.isTestnet || !c.disabled);
+    } else if (!showTestnets) {
       filtered = filtered.filter(c => !c.isTestnet);
     }
 
@@ -119,22 +118,11 @@ export function ChainSelector({
     }
   };
 
-  // Generate a simple logo based on chain name
+  // Get chain logo - now uses real icons from CDN
   const getChainLogo = (chain: Chain) => {
-    if (chain.logoUrl) return { type: 'image' as const, value: chain.logoUrl };
-    
-    // Return colored circles for different chains
-    const colors: Record<string, string> = {
-      'Arbitrum': 'bg-blue-500',
-      'Arb Sepolia': 'bg-blue-400',
-      'Base': 'bg-blue-600',
-      'Base Sepolia': 'bg-blue-500',
-      'Optimism': 'bg-red-500',
-      'Polygon': 'bg-purple-500'
-    };
-    
-    const colorClass = colors[chain.shortName] || 'bg-gray-500';
-    return { type: 'color' as const, colorClass, letter: chain.shortName[0] };
+    // Use the logoUrl if provided, otherwise fetch from icons lib
+    const iconUrl = chain.logoUrl || getChainIcon(chain.id);
+    return { type: 'image' as const, value: iconUrl };
   };
 
   return (
@@ -149,22 +137,21 @@ export function ChainSelector({
           className="w-full justify-between"
         >
           <div className="flex items-center gap-3">
-            {(() => {
-              const logo = getChainLogo(selectedChain);
-              return logo.type === 'image' ? (
-                <img 
-                  src={logo.value} 
-                  alt={selectedChain.name} 
-                  className="w-6 h-6 rounded-full" 
-                />
-              ) : (
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ${logo.colorClass}`}>
-                  {logo.letter}
-                </div>
-              );
-            })()}
+            <img 
+              src={getChainLogo(selectedChain).value} 
+              alt={selectedChain.name} 
+              className="w-6 h-6 rounded-full object-cover"
+              loading="lazy"
+            />
             <div className="text-left">
-              <div className="font-medium">{selectedChain.name}</div>
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{selectedChain.name}</span>
+                {showTestnetBadge && selectedChain.isTestnet && (
+                  <span className="text-[10px] px-1.5 py-0.5 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 rounded border border-yellow-500/30">
+                    Testnet
+                  </span>
+                )}
+              </div>
               <div className="text-xs text-muted-foreground">
                 {selectedChain.nativeCurrency.symbol}
               </div>
@@ -256,23 +243,8 @@ interface ChainItemProps {
 }
 
 function ChainItem({ chain, isSelected, onSelect }: ChainItemProps) {
-  const getChainLogo = (chain: Chain) => {
-    if (chain.logoUrl) return { type: 'image', value: chain.logoUrl };
-    
-    const colors: Record<string, string> = {
-      'Arbitrum': 'bg-blue-500',
-      'Arb Sepolia': 'bg-blue-400',
-      'Base': 'bg-blue-600',
-      'Base Sepolia': 'bg-blue-500',
-      'Optimism': 'bg-red-500',
-      'Polygon': 'bg-purple-500'
-    };
-    
-    const colorClass = colors[chain.shortName] || 'bg-gray-500';
-    return { type: 'color', colorClass, letter: chain.shortName[0] };
-  };
-
-  const logo = getChainLogo(chain);
+  // Always use CDN icons
+  const iconUrl = chain.logoUrl || getChainIcon(chain.id);
 
   return (
     <button
@@ -285,29 +257,54 @@ function ChainItem({ chain, isSelected, onSelect }: ChainItemProps) {
       } ${isSelected ? 'bg-accent' : ''}`}
     >
       <div className="flex items-center gap-3">
-        {logo.type === 'image' ? (
-          <img src={logo.value} alt={chain.name} className="w-7 h-7 rounded-full" />
-        ) : (
-          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-white text-sm font-bold ${logo.colorClass}`}>
-            {logo.letter}
-          </div>
-        )}
+        <img 
+          src={iconUrl} 
+          alt={chain.name} 
+          className="w-7 h-7 rounded-full object-cover"
+          loading="lazy"
+          onError={(e) => {
+            // Fallback to placeholder on error
+            (e.target as HTMLImageElement).src = `data:image/svg+xml,${encodeURIComponent(`
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+                <circle cx="14" cy="14" r="14" fill="#6366f1"/>
+                <text x="14" y="18" font-size="12" fill="white" text-anchor="middle" font-family="system-ui">${chain.shortName[0]}</text>
+              </svg>
+            `)}`;
+          }}
+        />
         <div>
           <div className="flex items-center gap-2">
             <span className="font-medium">{chain.name}</span>
             {chain.isTestnet && (
-              <Badge variant="outline" className="text-xs py-0 px-1">
+              <Badge variant="outline" className="text-xs py-0 px-1 border-yellow-500/50 text-yellow-600 dark:text-yellow-400">
                 Testnet
               </Badge>
             )}
             {chain.disabled && (
-              <Badge variant="outline" className="text-xs py-0 px-1 border-red-500 text-red-500">
+              <Badge variant="outline" className="text-xs py-0 px-1 border-muted-foreground/50 text-muted-foreground">
                 Coming Soon
               </Badge>
             )}
           </div>
-          <div className="text-xs text-muted-foreground">
-            Chain ID: {chain.id} • {chain.nativeCurrency.symbol}
+          <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <span>Chain ID: {chain.id}</span>
+            <span>•</span>
+            <span>{chain.nativeCurrency.symbol}</span>
+            {chain.faucetUrl && (
+              <>
+                <span>•</span>
+                <a 
+                  href={chain.faucetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-primary hover:underline inline-flex items-center gap-0.5"
+                >
+                  Faucet
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </>
+            )}
           </div>
         </div>
       </div>

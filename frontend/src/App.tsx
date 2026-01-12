@@ -1,23 +1,78 @@
-import { Routes, Route } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { Routes, Route, useNavigation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { AppLayout } from '@/components/layout/AppLayout'
-import { HomePage } from '@/pages/HomePage'
-import { IntentPage } from '@/pages/IntentPage'
-import { WalletDemoPage } from '@/pages/WalletDemoPage'
-import { ComponentsDemoPage } from '@/pages/ComponentsDemoPage'
-import { FormsDemoPage } from '@/pages/FormsDemoPage'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { CelebrationProvider, SkipLink, MainContent } from '@/components/ui'
+import { 
+  PageLoader, 
+  RouteProgressBar,
+  HistoryPageSkeleton,
+  AnalyticsPageSkeleton,
+  IntentPageSkeleton,
+} from '@/components/ui/RouteLoader'
+
+// Lazy load pages for better initial load performance
+const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.HomePage })))
+const IntentPage = lazy(() => import('@/pages/IntentPage').then(m => ({ default: m.IntentPage })))
+const HistoryPage = lazy(() => import('@/pages/HistoryPage').then(m => ({ default: m.HistoryPage })))
+const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })))
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })))
+
+// Page-specific suspense fallbacks
+function HistorySuspense() {
+  return (
+    <Suspense fallback={<HistoryPageSkeleton />}>
+      <HistoryPage />
+    </Suspense>
+  )
+}
+
+function AnalyticsSuspense() {
+  return (
+    <Suspense fallback={<AnalyticsPageSkeleton />}>
+      <AnalyticsPage />
+    </Suspense>
+  )
+}
+
+function IntentSuspense() {
+  return (
+    <Suspense fallback={<IntentPageSkeleton />}>
+      <IntentPage />
+    </Suspense>
+  )
+}
 
 function App() {
+  const navigation = useNavigation()
+  const isNavigating = navigation.state === 'loading'
+
   return (
-    <AppLayout>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/intent" element={<IntentPage />} />
-        <Route path="/intent/:id" element={<IntentPage />} />
-        <Route path="/wallet-demo" element={<WalletDemoPage />} />
-        <Route path="/components" element={<ComponentsDemoPage />} />
-        <Route path="/forms-demo" element={<FormsDemoPage />} />
-      </Routes>
-    </AppLayout>
+    <CelebrationProvider>
+      {/* Route transition progress bar */}
+      <RouteProgressBar isLoading={isNavigating} />
+      
+      <SkipLink />
+      <ErrorBoundary>
+        <AppLayout>
+          <MainContent className="flex-1">
+            <AnimatePresence mode="wait">
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/intent" element={<IntentSuspense />} />
+                  <Route path="/intent/:id" element={<IntentSuspense />} />
+                  <Route path="/history" element={<HistorySuspense />} />
+                  <Route path="/analytics" element={<AnalyticsSuspense />} />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </Suspense>
+            </AnimatePresence>
+          </MainContent>
+        </AppLayout>
+      </ErrorBoundary>
+    </CelebrationProvider>
   )
 }
 
