@@ -81,3 +81,88 @@ model GasPrice {
   
   @@map("gas_prices")
 }
+
+// CCIP Message Status Enum
+enum CCIPStatus {
+  PENDING
+  IN_FLIGHT
+  SUCCESS
+  FAILED
+  TIMEOUT
+}
+
+// CCIP Message tracking for cross-chain transfers
+model CCIPMessage {
+  id                    String     @id @default(cuid())
+  messageId             String     @unique @map("message_id") // CCIP message ID (bytes32)
+  intentId              String     @map("intent_id")
+  txHash                String     @map("tx_hash")
+  sourceChainId         Int        @map("source_chain_id")
+  sourceChainSelector   String     @map("source_chain_selector")
+  destChainId           Int        @map("dest_chain_id")
+  destChainSelector     String     @map("dest_chain_selector")
+  token                 String
+  amount                String     // Stored as string to avoid precision loss
+  sender                String
+  recipient             String
+  status                CCIPStatus @default(PENDING)
+  destTxHash            String?    @map("dest_tx_hash")
+  feeAmount             String?    @map("fee_amount")
+  feeToken              String?    @map("fee_token")
+  errorMessage          String?    @map("error_message")
+  createdAt             DateTime   @default(now()) @map("created_at")
+  updatedAt             DateTime   @updatedAt @map("updated_at")
+  completedAt           DateTime?  @map("completed_at")
+  
+  // Indexes for querying
+  @@index([intentId], name: "idx_ccip_intent")
+  @@index([status, createdAt], name: "idx_ccip_status_created")
+  @@index([sender, createdAt], name: "idx_ccip_sender_created")
+  @@index([sourceChainId, destChainId], name: "idx_ccip_chains")
+  @@map("ccip_messages")
+}
+
+// User Analytics - Daily aggregated statistics per user
+model UserAnalytics {
+  id                  String   @id @default(cuid())
+  userAddress         String   @map("user_address")
+  date                DateTime @db.Date // Daily aggregation date
+  totalIntents        Int      @default(0) @map("total_intents")
+  completedIntents    Int      @default(0) @map("completed_intents")
+  failedIntents       Int      @default(0) @map("failed_intents")
+  totalVolumeUsd      String   @default("0") @map("total_volume_usd")
+  totalGasSpent       String   @default("0") @map("total_gas_spent")
+  totalGasSaved       String   @default("0") @map("total_gas_saved")
+  avgExecutionTime    Int      @default(0) @map("avg_execution_time") // in seconds
+  chainDistribution   Json     @default("{}") @map("chain_distribution") // { "ethereum": 5, "arbitrum": 10 }
+  tokenDistribution   Json     @default("{}") @map("token_distribution") // { "USDC": 5, "ETH": 3 }
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  
+  @@unique([userAddress, date], name: "unique_user_date")
+  @@index([userAddress, date], name: "idx_user_analytics_date")
+  @@map("user_analytics")
+}
+
+// Platform Analytics - Daily aggregated platform-wide statistics
+model PlatformAnalytics {
+  id                  String   @id @default(cuid())
+  date                DateTime @unique @db.Date // Daily aggregation date
+  totalIntents        Int      @default(0) @map("total_intents")
+  completedIntents    Int      @default(0) @map("completed_intents")
+  failedIntents       Int      @default(0) @map("failed_intents")
+  uniqueUsers         Int      @default(0) @map("unique_users")
+  totalVolumeUsd      String   @default("0") @map("total_volume_usd")
+  totalGasSpent       String   @default("0") @map("total_gas_spent")
+  totalGasSaved       String   @default("0") @map("total_gas_saved")
+  avgExecutionTime    Int      @default(0) @map("avg_execution_time")
+  avgGasSavedPerUser  String   @default("0") @map("avg_gas_saved_per_user")
+  chainDistribution   Json     @default("{}") @map("chain_distribution")
+  tokenDistribution   Json     @default("{}") @map("token_distribution")
+  topDestChain        String?  @map("top_dest_chain")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  
+  @@index([date], name: "idx_platform_analytics_date")
+  @@map("platform_analytics")
+}

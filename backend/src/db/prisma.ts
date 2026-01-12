@@ -3,8 +3,11 @@
  * Ensures single database connection instance
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { logger } from '../utils/logger.js';
+
+// Re-export Prisma namespace for type usage
+export { Prisma };
 
 // Prevent multiple instances in development (hot reload)
 const globalForPrisma = globalThis as unknown as {

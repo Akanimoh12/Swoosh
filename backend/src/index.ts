@@ -12,7 +12,15 @@ import { testConnection as testDatabaseConnection, disconnect as disconnectDatab
 import { redis } from './db/redis.js';
 import { healthRoutes } from './routes/health.js';
 import { intentRoutes } from './routes/intents.js';
-import { websocketRoutes } from './routes/websocket.js';
+import { websocketRoutes } from './routes/websocket-enhanced.js';
+import { ccipRoutes } from './routes/ccip.js';
+import { dexRoutes } from './routes/dex.js';
+import { eventsRoutes } from './routes/events.js';
+import { analyticsRoutes } from './routes/analytics.js';
+import { startAllWatchers, stopAllWatchers } from './services/ccip-event-listener.js';
+import { wsManager } from './services/websocket-manager.js';
+import { intentEventMonitor } from './services/intent-event-monitor.js';
+import { startAnalyticsCron } from './services/analytics-cron.js';
 
 /**
  * Create and configure Fastify server
@@ -94,6 +102,10 @@ async function createServer() {
   // Register routes
   await fastify.register(healthRoutes);
   await fastify.register(intentRoutes, { prefix: '/api/intents' });
+  await fastify.register(ccipRoutes, { prefix: '/api/ccip' });
+  await fastify.register(dexRoutes, { prefix: '/api/dex' });
+  await fastify.register(eventsRoutes, { prefix: '/api/events' });
+  await fastify.register(analyticsRoutes, { prefix: '/api/analytics' });
   await fastify.register(websocketRoutes);
 
   // Global error handler
@@ -156,6 +168,33 @@ async function start() {
 
     logger.info(`📡 API available at http://${config.host}:${config.port}`);
     logger.info(`🔌 WebSocket available at ws://${config.host}:${config.port}/ws/intents/:id`);
+    logger.info(`🔗 CCIP API available at http://${config.host}:${config.port}/api/ccip`);
+
+    // Start CCIP event watchers (optional, can be disabled in production if using webhooks)
+    if (config.nodeEnv !== 'test') {
+      try {
+        startAllWatchers();
+        logger.info('👀 CCIP event watchers started');
+      } catch (error) {
+        logger.warn({ error }, 'Failed to start CCIP event watchers (non-critical)');
+      }
+
+      // Start intent event monitor
+      try {
+        await intentEventMonitor.start();
+        logger.info('📊 Intent event monitor started');
+      } catch (error) {
+        logger.warn({ error }, 'Failed to start intent event monitor (non-critical)');
+      }
+
+      // Start analytics cron job
+      try {
+        startAnalyticsCron();
+        logger.info('📈 Analytics cron job started');
+      } catch (error) {
+        logger.warn({ error }, 'Failed to start analytics cron (non-critical)');
+      }
+    }
   } catch (error) {
     logger.error({ error }, '❌ Failed to start server');
     process.exit(1);
@@ -169,6 +208,15 @@ async function shutdown(signal: string) {
   logger.info({ signal }, 'Shutdown signal received');
 
   try {
+    // Shutdown WebSocket manager (notify clients)
+    wsManager.shutdown();
+
+    // Stop intent event monitor
+    intentEventMonitor.stop();
+
+    // Stop CCIP event watchers
+    stopAllWatchers();
+
     // Disconnect from database
     await disconnectDatabase();
 
