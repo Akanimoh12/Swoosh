@@ -2,11 +2,14 @@
 //! 
 //! Executes optimized cross-chain routes atomically, handling swaps and bridge transfers.
 
-#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+// Module is included from lib.rs - no_main is set there
 #![cfg_attr(feature = "contract-client-gen", allow(unused_imports))]
 
 extern crate alloc;
 
+use alloc::vec;
+use alloc::vec::Vec;
+use alloc::string::String;
 use alloy_sol_types::sol;
 use stylus_sdk::{
     alloy_primitives::{Address, U256, Bytes},

@@ -25,4 +25,9 @@ panic = "abort"
 opt-level = "z"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+name = "swoosh_contracts"
+crate-type = ["lib", "cdylib"]
+
+[[bin]]
+name = "swoosh-contracts"
+path = "src/main.rs"

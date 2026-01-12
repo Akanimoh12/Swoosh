@@ -1,14 +1,7 @@
-# Stylus configuration for Swoosh contracts
+[contract.deployments.arbitrum-sepolia]
+network = "arbitrum-sepolia"
+no_activate = false
+deployer_address = "0xcEcba2F1DC234f70Dd89F2041029807F8D03A990"
 
-[stylus]
-# Export ABIs for all contracts
-export-abi = true
-
-# Target VM version (latest stable)
-vm-version = "latest"
-
-# Optimization level for WASM compilation
-opt-level = "z"  # Optimize for size
-
-# Enable debug info in non-production builds
-debug = false
+[workspace.networks.arbitrum-sepolia]
+endpoint = "https://sepolia-rollup.arbitrum.io/rpc"
