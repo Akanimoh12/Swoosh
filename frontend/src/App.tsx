@@ -1,12 +1,11 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, useNavigation } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { CelebrationProvider, SkipLink, MainContent } from '@/components/ui'
 import { 
   PageLoader, 
-  RouteProgressBar,
   HistoryPageSkeleton,
   AnalyticsPageSkeleton,
   IntentPageSkeleton,
@@ -45,14 +44,8 @@ function IntentSuspense() {
 }
 
 function App() {
-  const navigation = useNavigation()
-  const isNavigating = navigation.state === 'loading'
-
   return (
     <CelebrationProvider>
-      {/* Route transition progress bar */}
-      <RouteProgressBar isLoading={isNavigating} />
-      
       <SkipLink />
       <ErrorBoundary>
         <AppLayout>

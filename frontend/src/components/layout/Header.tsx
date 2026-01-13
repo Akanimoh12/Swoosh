@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Link, useNavigation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { WalletButton } from '@/components/wallet/WalletButton';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from '@/components/ui/Button';
 import { Logo } from '@/components/brand/Logo';
 import { cn } from '@/lib/utils';
 import { isTestnetMode } from '@/lib/icons';
-import { AlertTriangle, ExternalLink, Loader2 } from 'lucide-react';
+import { AlertTriangle, ExternalLink } from 'lucide-react';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -57,8 +57,6 @@ function TestnetBanner() {
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navigation = useNavigation();
-  const isNavigating = navigation.state === 'loading';
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen((prev) => !prev);
@@ -88,14 +86,6 @@ export function Header() {
               
               {/* Testnet Badge (Desktop) */}
               <TestnetBadge />
-              
-              {/* Navigation Loading Indicator */}
-              {isNavigating && (
-                <div className="hidden sm:flex items-center gap-1.5 text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <span className="text-xs">Loading...</span>
-                </div>
-              )}
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-6">
